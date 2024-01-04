@@ -1,10 +1,16 @@
 package todo
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strconv"
 	"strings"
+)
+
+const (
+	emptyTask     = "[ ]"
+	completedTask = "[x]"
 )
 
 // TodoList struct represents the to-do list
@@ -14,7 +20,7 @@ type TodoList struct {
 
 // AddTask adds a new task to the to-do list
 func (t *TodoList) AddTask(description string) {
-	task := fmt.Sprintf("[ ] %s", description)
+	task := fmt.Sprintf("%s %s", emptyTask, description)
 	t.Tasks = append(t.Tasks, task)
 	fmt.Println("Task added successfully.")
 }
@@ -38,43 +44,52 @@ func (t *TodoList) ListTasks() {
 }
 
 // MarkOrDeleteTask marks a task as done or deletes it based on the input index
-func (t *TodoList) MarkOrDeleteTask(input string) {
+func (t *TodoList) MarkOrDeleteTask(input string) error {
 	parts := strings.Fields(input)
 	if len(parts) < 2 {
-		fmt.Println("Invalid input. Please provide a valid task index.")
-		return
+		return errors.New("Invalid input. Please provide a valid task index.")
 	}
 
 	index, err := strconv.Atoi(parts[1])
 	if err != nil {
-		fmt.Println("Invalid input. Please provide a valid task index.")
-		return
+		return errors.New("Invalid input. Please provide a valid task index.")
 	}
 
 	command := strings.ToLower(parts[0])
 	switch command {
 	case "mark":
-		if index >= 1 && index <= len(t.Tasks) {
-			task := t.Tasks[index-1]
-			if !strings.Contains(task, "[x]") {
-				t.Tasks[index-1] = strings.Replace(task, "[ ]", "[x]", 1)
-				fmt.Println("Task marked as done.")
-			} else {
-				fmt.Println("Task is already marked as done.")
-			}
-		} else {
-			fmt.Println("Invalid task index.")
-		}
+		return t.markTask(index)
 	case "delete":
-		if index >= 1 && index <= len(t.Tasks) {
-			t.Tasks = append(t.Tasks[:index-1], t.Tasks[index:]...)
-			fmt.Println("Task deleted successfully.")
-		} else {
-			fmt.Println("Invalid task index.")
-		}
+		return t.deleteTask(index)
 	default:
-		fmt.Println("Invalid command. Please use 'mark' or 'delete' followed by the task index.")
+		return errors.New("Invalid command. Please use 'mark' or 'delete' followed by the task index.")
 	}
+}
+
+func (t *TodoList) markTask(index int) error {
+	if index < 1 || index > len(t.Tasks) {
+		return errors.New("Invalid task index.")
+	}
+
+	task := t.Tasks[index-1]
+	if !strings.Contains(task, completedTask) {
+		t.Tasks[index-1] = strings.Replace(task, emptyTask, completedTask, 1)
+		fmt.Println("Task marked as done.")
+	} else {
+		fmt.Println("Task is already marked as done.")
+	}
+	return nil
+}
+
+// deleteTask deletes a specific task from the to-do list
+func (t *TodoList) deleteTask(index int) error {
+	if index < 1 || index > len(t.Tasks) {
+		return errors.New("Invalid task index.")
+	}
+
+	t.Tasks = append(t.Tasks[:index-1], t.Tasks[index:]...)
+	fmt.Println("Task deleted successfully.")
+	return nil
 }
 
 // DeleteAllTasks deletes all tasks from the to-do list
