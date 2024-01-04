@@ -44,7 +44,6 @@ func main() {
 	if addFlag != "" {
 		// If the -add flag is provided, add a new task
 		todoList.AddTask(addFlag)
-		fmt.Println("Task added successfully.")
 	}
 
 	if markFlag > 0 {
@@ -66,7 +65,6 @@ func main() {
 		// If the -delete flag is provided, delete a task
 		if deleteFlag <= len(todoList.Tasks) {
 			todoList.Tasks = append(todoList.Tasks[:deleteFlag-1], todoList.Tasks[deleteFlag:]...)
-			fmt.Println("Task deleted successfully.")
 		} else {
 			fmt.Println("Invalid task index.")
 		}
@@ -75,7 +73,6 @@ func main() {
 	if deleteAllFlag {
 		// If the -deleteall flag is provided, delete all tasks
 		todoList.DeleteAllTasks()
-		fmt.Println("All tasks deleted successfully.")
 	}
 
 	// Save the updated to-do list to a file
